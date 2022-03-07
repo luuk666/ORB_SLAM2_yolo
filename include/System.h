@@ -25,7 +25,7 @@
 #include<string>
 #include<thread>
 #include<opencv2/core/core.hpp>
-
+#include <Eigen/Dense>
 #include "Tracking.h"
 #include "FrameDrawer.h"
 #include "MapDrawer.h"
@@ -75,8 +75,9 @@ public:
     // Proccess the given monocular frame
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
     // Returns the camera pose (empty if tracking fails).
+    //cv::Mat TrackMonocularRos(const cv::Mat &im, const double &timestamp,Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> metrix);
+    void TrackMonocularROS(const cv::Mat &imMat);
     cv::Mat TrackMonocular(const cv::Mat &im, const double &timestamp);
-
     // This stops local mapping thread (map building) and performs only camera tracking.
     void ActivateLocalizationMode();
     // This resumes local mapping thread and performs SLAM again.

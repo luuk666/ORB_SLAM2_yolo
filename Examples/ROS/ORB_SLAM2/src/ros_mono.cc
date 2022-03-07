@@ -17,7 +17,9 @@
 * You should have received a copy of the GNU General Public License
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
-
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include<iostream>
 #include<algorithm>
@@ -27,19 +29,29 @@
 #include<ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 
+#include<Eigen/Dense>
+#include<Eigen/StdVector>
+#include <Eigen/Core>
+#include "Converter.h"
+#include "opencv2/core/eigen.hpp"
+
 #include<opencv2/core/core.hpp>
-
+////////////////
+#include "std_msgs/Float64MultiArray.h"
+///////////////
 #include"../../../include/System.h"
-
 using namespace std;
-
+//////
+Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>  metrix2;
+//Eigen::MatrixXd metrix2;
+//////
 class ImageGrabber
 {
 public:
     ImageGrabber(ORB_SLAM2::System* pSLAM):mpSLAM(pSLAM){}
 
     void GrabImage(const sensor_msgs::ImageConstPtr& msg);
-
+    void GrabMetrix(const std_msgs::Float64MultiArray msg);
     ORB_SLAM2::System* mpSLAM;
 };
 
@@ -61,7 +73,12 @@ int main(int argc, char **argv)
     ImageGrabber igb(&SLAM);
 
     ros::NodeHandle nodeHandler;
-    ros::Subscriber sub = nodeHandler.subscribe("/camera/image_raw", 1, &ImageGrabber::GrabImage,&igb);
+////////////////////
+    ros::Subscriber sub2 = nodeHandler.subscribe("robot_pose", 1, &ImageGrabber::GrabMetrix,&igb);
+//////////////////////////
+    ros::Subscriber sub = nodeHandler.subscribe("/kitti/camera_color_left/image_raw", 1, &ImageGrabber::GrabImage,&igb);
+    //MXW9.7
+    
 
     ros::spin();
 
@@ -89,8 +106,51 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
         ROS_ERROR("cv_bridge exception: %s", e.what());
         return;
     }
-
     mpSLAM->TrackMonocular(cv_ptr->image,cv_ptr->header.stamp.toSec());
+/////
+    //mpSLAM->TrackMonocularRos(cv_ptr->image,cv_ptr->header.stamp.toSec());
+/////
 }
+//////
+void ImageGrabber::GrabMetrix(const std_msgs::Float64MultiArray msg)
+{
+    //Eigen::VectorXd metrix=(Eigen::VectorXd) msg.data;
+    //Eigen::RowVectorXd metrix;
+    //Eigen::RowVectorXd metrix3;
+    int a = (int) msg.data.at(0);
+    int b = (int) msg.data.at(1);
+    int inij;
+    metrix2.resize(a,b);
+    std::cout<< " a = " << msg.data[0] << std::endl;
+    std::cout<< " length = " << std::end(msg.data) - std::begin(msg.data) << std::endl;
 
+    //int num= msg.data.at(0)*msg.data.at(1);
+    for(int i=0; i<a;i++)
+    {
+        if(i==0)
+        {
+           inij=2;
+        }
+        else
+        {
+            inij=0;
+        }
+        for( int j=inij; j<b;j++)
+        {
 
+             metrix2(i,j)=msg.data.at(i);
+
+        }
+       
+    }
+    std::cout<< " b = " << msg.data.at(1) << std::endl;
+    //Eigen::MatrixXd metrix2;
+    //metrix3=metrix.tail(num-2);
+    //metrix2=Eigen::Map<Eigen::MatrixXd>(metrix3.data());
+   
+    cv::Mat img;
+    cv::eigen2cv(metrix2, img);
+    mpSLAM->TrackMonocularROS(img);
+    std::cout << "ROS part is ok!" <<std::endl;
+}
+//////

@@ -266,6 +266,10 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 
     return mCurrentFrame.mTcw.clone();
 }
+void Tracking::GrabImageMonocularRos(const cv::Mat &metrix)
+{
+    Optimizer::PoseOptimizationROS(metrix);
+}
 
 void Tracking::Track()
 {
