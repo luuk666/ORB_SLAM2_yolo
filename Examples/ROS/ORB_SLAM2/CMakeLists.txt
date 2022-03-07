@@ -37,8 +37,8 @@ if(NOT OpenCV_FOUND)
       message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
    endif()
 endif()
-
-find_package(Eigen3 3.1.0 REQUIRED)
+include_directories("/usr/include/eigen3")
+#find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 
 include_directories(
@@ -94,4 +94,5 @@ src/ros_rgbd.cc
 target_link_libraries(RGBD
 ${LIBS}
 )
-
+target_link_libraries(Stereo boost_system boost_filesystem)  
+target_link_libraries(RGBD boost_system boost_filesystem) 

@@ -17,8 +17,12 @@
 * You should have received a copy of the GNU General Public License
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
-
-
+/////
+#include <Eigen/Dense>
+/////
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "Tracking.h"
 
 #include<opencv2/core/core.hpp>
@@ -238,7 +242,6 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
 cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 {
     mImGray = im;
-
     if(mImGray.channels()==3)
     {
         if(mbRGB)

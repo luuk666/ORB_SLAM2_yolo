@@ -18,7 +18,10 @@
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
 
-
+#include <Eigen/Dense>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "System.h"
 #include "Converter.h"
