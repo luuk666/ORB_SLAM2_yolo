@@ -58,6 +58,8 @@ public:
 
 public:
 
+    bool GetFramePose(cv::Mat &Twc, float *q); 
+
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
     System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true);
 

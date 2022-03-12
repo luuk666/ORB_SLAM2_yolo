@@ -115,6 +115,20 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     mpLoopCloser->SetLocalMapper(mpLocalMapper);
 }
 
+bool System::GetFramePose(cv::Mat &Twc, float *q) 
+{
+    cv::Mat Rwc(3,1,CV_32F); 
+    if(mpTracker->mState != 2) //track not ok 
+        return false; 
+    if(!mpMapDrawer->GetCurrentPose(Rwc, Twc)) 
+        return false; 
+    std::vector<float> _q = Converter::toQuaternion(Rwc); 
+    for(int i=0; i<4; ++i) 
+    { 
+        q[i] = _q[i]; 
+    } 
+    return true; } 
+
 cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp)
 {
     if(mSensor!=STEREO)

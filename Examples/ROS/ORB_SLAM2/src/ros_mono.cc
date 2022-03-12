@@ -37,9 +37,13 @@
 
 #include<opencv2/core/core.hpp>
 ////////////////
-#include "std_msgs/Float64MultiArray.h"
+#include"std_msgs/Float64MultiArray.h"
+#include"geometry_msgs/TransformStamped.h"
+#include"geometry_msgs/PoseStamped.h"
+
 ///////////////
 #include"../../../include/System.h"
+
 using namespace std;
 //////
 Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>  metrix2;
@@ -47,9 +51,18 @@ Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>  metrix2;
 //////
 class ImageGrabber
 {
-public:
-    ImageGrabber(ORB_SLAM2::System* pSLAM):mpSLAM(pSLAM){}
+private:
+    ros::Publisher pub_tf; 
+    ros::NodeHandle nh2; 
 
+public:
+    ImageGrabber(ORB_SLAM2::System* pSLAM):mpSLAM(pSLAM){
+        pub_tf = nh2.advertise<geometry_msgs::TransformStamped>("/slam/tf",10) ;
+    }
+    geometry_msgs::PoseStamped msg; 
+    geometry_msgs::TransformStamped tf1; 
+    cv::Mat Twc; 
+    float q[4]; 
     void GrabImage(const sensor_msgs::ImageConstPtr& msg);
     void GrabMetrix(const std_msgs::Float64MultiArray msg);
     ORB_SLAM2::System* mpSLAM;
@@ -107,6 +120,19 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
         return;
     }
     mpSLAM->TrackMonocular(cv_ptr->image,cv_ptr->header.stamp.toSec());
+    if(mpSLAM->GetFramePose(Twc, q)){
+        tf1.header.stamp = msg->header.stamp; 
+        tf1.header.frame_id = "world" ; 
+        tf1.child_frame_id = "slam" ; 
+        tf1.transform.translation.x = Twc.at<float>(2);//Twc.at<float>(0); 
+        tf1.transform.translation.y = -Twc.at<float>(0);//Twc.at<float>(1); 
+        tf1.transform.translation.z = -Twc.at<float>(1);//Twc.at<float>(2); 
+        tf1.transform.rotation.x = q[2];//q[0]; 
+        tf1.transform.rotation.y = -q[0];//q[1]; 
+        tf1.transform.rotation.z = -q[1];//q[2]; 
+        tf1.transform.rotation.w = q[3]; 
+        pub_tf.publish(tf1); 
+    } 
 /////
     //mpSLAM->TrackMonocularRos(cv_ptr->image,cv_ptr->header.stamp.toSec());
 /////
